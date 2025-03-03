@@ -4,6 +4,7 @@ import flet as ft
 import pandas as pd
 import base64
 import io
+import json
 from Funciones.data_processing import cargar_datos_desde_json, guardar_datos_local
 from Funciones.schedule import create_schedule_sheet, create_schedule_pdf
 from Diseño.styles import apply_dataframe_styles, get_reportlab_styles
