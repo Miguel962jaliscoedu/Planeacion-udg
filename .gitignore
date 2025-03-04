@@ -175,3 +175,4 @@ cython_debug/
 /build
 /dist
 datos.json
+consulta_data.json
