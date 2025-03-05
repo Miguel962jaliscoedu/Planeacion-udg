@@ -73,7 +73,8 @@ class SeleccionMaterias:
                 self.filtrar_nrcs_button,
                 self.tabla_nrcs_filtrados,
                 footer,
-            ]
+            ],
+            scroll=ft.ScrollMode.AUTO,  # Agrega la barra de desplazamiento automática
         )
 
     def agregar_seleccion(self, e):
