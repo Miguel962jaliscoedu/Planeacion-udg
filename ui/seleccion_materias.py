@@ -11,15 +11,23 @@ VERSION = os.environ.get("VERSION", "Versión de desarrollo")
 URL_PAGINA = os.environ.get("URL_PAGINA", "Web de desarrollo")
 
 class SeleccionMaterias:
-    def __init__(self, page, mostrar_seleccion_materias_callback):
+    def __init__(self, page, mostrar_generacion_horario, mostrar_formulario):
         self.page = page
-        self.mostrar_seleccion_materias_callback = mostrar_seleccion_materias_callback
+        self.mostrar_generacion_horario = mostrar_generacion_horario
+        self.mostrar_formulario = mostrar_formulario
         self.materias_seleccionadas = []
         self.nrcs_seleccionados = []
         self.materias_filtradas = []
 
+    def mostrar_consulta_inicial(self, page):
+        page.clean()
+        from ui.consulta_inicial import ConsultaInicial
+        consulta_inicial = ConsultaInicial(page, self.mostrar_generacion_horario)
+        page.add(consulta_inicial.build())
+        page.update()
+
     def build(self):
-        data = cargar_datos_desde_json("consulta_data.json")
+        data = cargar_datos_desde_json("datos.json")
         self.materias = data.get("oferta_academica", [])
 
         self.materias_seleccionadas = []
@@ -32,7 +40,7 @@ class SeleccionMaterias:
             on_change=self.agregar_seleccion,
         )
 
-        self.materias_seleccionadas_container = ft.Column()
+        self.materias_seleccionadas_container = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True) #Se agrega el scroll y expand.
 
         self.filtrar_button = ft.ElevatedButton("Filtrar Materias", on_click=self.filtrar_materias)
 
@@ -46,7 +54,7 @@ class SeleccionMaterias:
             on_change=self.agregar_nrc_seleccionado,
         )
 
-        self.nrcs_seleccionados_container = ft.Column()
+        self.nrcs_seleccionados_container = ft.Column(scroll=ft.ScrollMode.AUTO, expand=True) #Se agrega el scroll y expand.
 
         self.filtrar_nrcs_button = ft.ElevatedButton("Filtrar NRCs", on_click=self.filtrar_nrcs)
 
@@ -54,8 +62,14 @@ class SeleccionMaterias:
 
         footer = Footer(VERSION, URL_PAGINA).build()
 
+        self.generar_horario_button = ft.ElevatedButton("Generar Horario", on_click=self.generar_horario)
+
         return ft.Column(
             controls=[
+                ft.Row(controls=[
+                    ft.ElevatedButton("Nueva Consulta", on_click=lambda e: self.mostrar_consulta_inicial(self.page)),
+                    ft.ElevatedButton("Formulario de Sugerencias", on_click=lambda e: self.mostrar_formulario(self.page)),
+                ]),
                 self.dropdown_materias,
                 ft.Row(
                     controls=[
@@ -85,6 +99,7 @@ class SeleccionMaterias:
                     expand=True,
                 ),
                 self.mensajes_cruces_container,
+                self.generar_horario_button,
                 footer,
             ],
             scroll=ft.ScrollMode.ADAPTIVE,
@@ -172,7 +187,7 @@ class SeleccionMaterias:
         self.actualizar_dropdown_nrcs()
     
     def actualizar_tabla(self, datos, tabla, contenedor, cruces=None):
-        print(f"Actualizando tabla {tabla}: datos = {datos}")
+        print(f"Actualizando tabla")
         tabla.rows = []
         if datos:
             tabla.visible = True
@@ -223,3 +238,17 @@ class SeleccionMaterias:
         # Mostrar mensajes de cruces
         self.mensajes_cruces_container.controls = [ft.Text(mensaje) for mensaje in mensajes_cruces]
         self.page.update()
+
+    def generar_horario(self, e): #Se agrega la funcion generar_horario.
+        print("Generando horario...")
+
+        # Obtener los datos necesarios (NRCs seleccionados)
+        nrcs_seleccionados_data = [
+            materia
+            for materia in self.materias_filtradas
+            if str(materia["NRC"]) in self.nrcs_seleccionados
+        ]
+
+        # Pasar los datos a la clase GeneracionHorario
+        self.mostrar_generacion_horario(self.page, nrcs_seleccionados_data)
+    

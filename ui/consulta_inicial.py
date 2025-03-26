@@ -79,7 +79,7 @@ class ConsultaInicial:
                     "horario_generado": None,
                     "ciclo": self.selected_options["ciclop"]["description"]
                 }
-                with open("consulta_data.json", "w") as f:
+                with open("datos.json", "w") as f:
                     json.dump(data_to_save, f, indent=4)
                 self.page.client_storage.set("expanded_data", json.dumps(oferta_academica))
 
